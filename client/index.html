@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link type="text/css" rel="stylesheet" href="style.css">
+	<script src="socket.io/socket.io.js">
+
+	</script>
+	<script src="script.js">
+
+	</script>
+</head>
+
+<body onload="on_load()">
+	<div id="index">
+		<img src="images/Geometricity.png">
+
+			<br><br>
+
+			<h2> Name </h2>
+			<input id="name_input" type="text" onkeypress="clear_error()" autofocus="true" maxlength="12" value="test"> </input>
+
+			<br><br>
+			<br><br>
+
+			<h2> Game ID </h2>
+			<input id="id_input" type="text" onkeypress="clear_error()" autocomplete="false" maxlength="4" value="test"> </input>
+
+			<br><br>
+
+			<button class="menu" onclick="join_game()"> Join Game </button>
+
+			<br><br>
+			<br><br>
+
+			<button class="menu" onclick="create_game()"> Create Game </button>
+
+			<br><br>
+
+			<error id="error" style="display: none;"> </error>
+		</div>
+
+		<div id="game" style="display: none;">
+			<img src="images/Geometricity.png">
+
+			<br><br>
+
+			<h3 id="room">
+				Room ID : 
+			</h3>
+
+			<h1 id="information">
+				Information
+			</h1>
+
+			<div id="players">
+			
+				
+			</div>
+			<br>
+
+			<canvas id="canvas" width="1600" height="900"></canvas>
+			<br>
+
+			<div>
+				<button id="clear" disabled="true"> Clear </button>
+
+				<w></w>
+
+				<button id="lower" disabled="true"> - </button>
+				<p id="size" disabled="true"> 1 </p>
+				<button id="higher" disabled="true"> + </button>
+
+				<w></w>
+
+				<button id="pen" disabled="true"> Pen </button>
+				<button id="erase" disabled="true"> Erase </button>
+			</div>
+
+			<br><br>
+			<button class="choices" disabled="true">PH</button>
+			<w></w>
+			<button class="choices" disabled="true">PH</button>
+			<br><br>
+			<button class="choices" disabled="true">PH</button>
+			<w></w>
+			<button class="choices" disabled="true">PH</button>
+		</div>
+	</body>
+</html>
