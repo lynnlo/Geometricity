@@ -9,12 +9,13 @@ const fs = require("fs")
 var dir = path.join(__dirname, "client");
 var rooms = {};
 
-var words = JSON.parse(fs.readFileSync("words.json"))
+var words = JSON.parse(fs.readFileSync("words.json"));
 
 app.use(express.static(dir));
 
 http.listen(3000, function () {
     console.log("Starting on port : " + 3000);
+	console.log("http://localhost:3000");
 })
 
 io.on("connect", (socket) => {
@@ -49,6 +50,7 @@ io.on("connect", (socket) => {
 				name,
 			],
 			info: "Waiting for more players...",
+			word: "",
 			drawer: {},
 			points: {},
 		}
@@ -92,9 +94,24 @@ io.on("connect", (socket) => {
 				setTimeout(() => {
 					drawer = rooms[id].sockets[random.int(0, rooms[id].players.length - 1)];
 					rooms[id].drawer = drawer;
-					random.
-					words.math
-					io.to(id).emit("start-game", drawer.name);
+					
+					list = [];
+					for (i=0;i<4;i++){
+						word = words.math[random.int(0, words.math.length - 1)];
+						if (!list.find((x) => {return x == word})){
+							list.push(word);
+						}
+						else {
+							i -= 1;
+						}
+					}
+					
+					rooms[id].word = list[random.int(0, list.length - 1)];
+					rooms[id].drawer.socket.to(id).emit("update-info", "Game has started!")
+					rooms[id].drawer.socket.emit("update-info", "Your word is : "+rooms[id].word+".");
+					
+					console.log(list);
+					io.to(id).emit("start-game", drawer.name, list);
 				}, 500)
 			}
 		}

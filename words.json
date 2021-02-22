@@ -1,8 +1,22 @@
 {
-	"words_math" : [
+	"math" : [
 		"add",
 		"subtract",
 		"multiply",
 		"divide",
+		"square",
+		"squareroot",
+		"modulus",
+		"integer",
+		"one",
+		"two",
+		"three",
+		"four",
+		"five",
+		"six",
+		"seven",
+		"eight",
+		"nine",
+		"ten"
 	]
 }

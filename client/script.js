@@ -96,8 +96,14 @@ function on_load() {
 		console.log(name)
 	})
 
-	socket.on("start-game", (name) => {
+	socket.on("start-game", (name, list) => {
 		players.innerHTML = players.innerHTML.replace(name, "<b><i>"+name+"</i></b>");
+
+		i = 0;
+		choices.forEach((x) => {
+			x.innerHTML = list[i];
+			i += 1;
+		})
 
 		if (name == local_name){
 			local_drawer = true;
@@ -114,7 +120,7 @@ function on_load() {
 		}
 	})
 
-	socket.on("reset-game", (name) => {
+	socket.on("reset-game", () => {
 		players.innerHTML = players.innerHTML.replace("<b><i>", "");
 		players.innerHTML = players.innerHTML.replace("</i></b>", "");
 
