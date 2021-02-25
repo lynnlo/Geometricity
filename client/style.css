@@ -109,6 +109,6 @@ w::after{
 	content: "      ";
 }
 
-#information {
+#information, #points, #drawer {
 	font-size: 80%;
 }

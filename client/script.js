@@ -14,6 +14,8 @@ var chat
 var canvas
 var room
 var information
+var points
+var drawer
 var choices
 var clear
 var lower
@@ -44,9 +46,10 @@ function on_load() {
 	canvas = document.getElementById("canvas");
 	room = document.getElementById("room")
 	information = document.getElementById("information");
+	points = document.getElementById("points");
+	drawer = document.getElementById("drawer");
 
 	choices = [...document.getElementsByClassName("choices")];
-	console.log(choices)
 
 	players = document.getElementById("players");
 
@@ -84,8 +87,8 @@ function on_load() {
 	})
 
 	socket.on("all-players", (list) => {
-		console.log(list)
 		players.innerHTML = list.join(" ");
+		socket.emit("update-canvas", canvas.toDataURL());
 	})
 
 	socket.on("new-player", (name) => {
@@ -93,19 +96,25 @@ function on_load() {
 	})
 
 	socket.on("remove-player", (name) => {
-		console.log(name)
+		console.log(name) 
 	})
 
 	socket.on("start-game", (name, list) => {
-		players.innerHTML = players.innerHTML.replace(name, "<b><i>"+name+"</i></b>");
+		drawer.innerHTML = "Drawer : " + name;
 
 		i = 0;
 		choices.forEach((x) => {
 			x.innerHTML = list[i];
 			i += 1;
+
+			x.onclick = () => {
+				socket.emit("guess", x.innerHTML);
+				choices.forEach((x) => {x.disabled = true});
+			}
 		})
 
 		if (name == local_name){
+			drawer.innerHTML = "You are the drawer.";
 			local_drawer = true;
 
 			clear.disabled = false;
@@ -121,8 +130,7 @@ function on_load() {
 	})
 
 	socket.on("reset-game", () => {
-		players.innerHTML = players.innerHTML.replace("<b><i>", "");
-		players.innerHTML = players.innerHTML.replace("</i></b>", "");
+		drawer.innerHTML = "";
 
 		local_drawer = false;
 
@@ -140,6 +148,10 @@ function on_load() {
 
 	socket.on("update-info", (info) => {
 		information.innerHTML = info;
+	})
+
+	socket.on("update-score", (score) => {
+		points.innerHTML = "Points : " + score;
 	})
 
 	socket.on("update-canvas", (data) => {
@@ -161,8 +173,7 @@ function on_load() {
 	unit_size = 1 * (document.body.clientWidth / 500);
 	unit = (n = 1) => { return n * unit_size };
 
-	// Painter
-
+	// // Painter
 	if (pen_size <= 1) {
 		lower.disabled = "true";
 	}
@@ -193,7 +204,7 @@ function on_load() {
 			context.stroke();
 
 			// Send image
-			socket.emit("update-canvas", canvas.toDataURL())
+			socket.emit("update-canvas", canvas.toDataURL());
 		}
 		else {
 			context.moveTo(e.layerX, e.layerY);
@@ -204,7 +215,7 @@ function on_load() {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
 		// Send image
-		socket.emit("update-canvas", canvas.toDataURL())
+		socket.emit("update-canvas", canvas.toDataURL());
 	}
 
 	lower.onclick = () => {
