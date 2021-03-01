@@ -23,8 +23,14 @@ var higher
 var size
 var pen
 var erase
-var context
 
+var color_black
+var color_white
+var color_red
+var color_green
+var color_blue
+
+var context
 var socket
 
 var draw = false;
@@ -50,6 +56,12 @@ function on_load() {
 	drawer = document.getElementById("drawer");
 
 	choices = [...document.getElementsByClassName("choices")];
+
+	color_black = document.getElementById("color_black");
+	color_white = document.getElementById("color_white");
+	color_red = document.getElementById("color_red");
+	color_green = document.getElementById("color_green");
+	color_blue = document.getElementById("color_blue");
 
 	players = document.getElementById("players");
 
@@ -109,7 +121,9 @@ function on_load() {
 
 			x.onclick = () => {
 				socket.emit("guess", x.innerHTML);
-				choices.forEach((x) => {x.disabled = true});
+				console.log("guessed")
+				choices.forEach((a) => {a.disabled = true});
+				console.log(x.disabled)
 			}
 		})
 
@@ -121,6 +135,12 @@ function on_load() {
 			higher.disabled = false;
 			pen.disabled = false;
 			erase.disabled = false;
+
+			color_black.disabled = false;
+			color_white.disabled = false;
+			color_red.disabled = false;
+			color_green.disabled = false;
+			color_blue.disabled = false;
 		}
 		else {
 			choices.forEach((x) => {
@@ -133,13 +153,23 @@ function on_load() {
 		drawer.innerHTML = "";
 
 		local_drawer = false;
-
+		
 		pen_size = 1;
 		eraser = false;
 		clear.disabled = true;
 		higher.disabled = true;
 		pen.disabled = true;
 		erase.disabled = true;
+
+		color_black.disabled = true;
+		color_white.disabled = true;
+		color_red.disabled = true;
+		color_green.disabled = true;
+		color_blue.disabled = true;
+
+		size.innerHTML = pen_size + (eraser ? "E" : "")
+
+		context.clearRect(0, 0, canvas.width, canvas.height);
 
 		choices.forEach((x) => {
 			x.disabled = true;
@@ -184,7 +214,7 @@ function on_load() {
 	canvas.addEventListener("mousedown", (e) => {
 		if (local_drawer){
 			draw = true;
-			context.strokeStyle = (eraser ? "#353535" : "#050505");
+			context.strokeStyle = (eraser ? "#353535" : context.stroke);
 			context.beginPath();
 		}
 		
@@ -249,6 +279,27 @@ function on_load() {
 		eraser = true;
 		size.innerHTML = pen_size + "E";
 	}
+
+	color_black.onclick = () => {
+		context.strokeStyle = "#050505";
+	}
+
+	color_white.onclick = () => {
+		context.strokeStyle = "#aaaaaa";
+	}
+
+	color_red.onclick = () => {
+		context.strokeStyle = "#aa0505";
+	}
+
+	color_green.onclick = () => {
+		context.strokeStyle = "#05aa05";
+	}
+
+	color_blue.onclick = () => {
+		context.strokeStyle = "#0505aa";
+	}
+
 }
 
 function create_game() {

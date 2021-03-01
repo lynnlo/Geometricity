@@ -58,10 +58,9 @@ io.on("connect", (socket) => {
 				update_all_scores(id);
 
 				io.to(id).emit("start-game", drawer.name, rooms[id].list);
-			}, 1500)
+			}, 750)
 		}
 		else if (Object.keys(rooms[id].drawer).length > 0){
-			console.log("New join")
 			socket.emit("start-game", rooms[id].drawer.name, rooms[id].list);
 			socket.emit("update-info", rooms[socket.room].info);
 		}
@@ -75,6 +74,7 @@ io.on("connect", (socket) => {
 			if (rooms[socket.room].drawer.id == socket.id){
 				io.to(socket.room).emit("reset-game");
 				rooms[socket.room].info = "Waiting for more players...";
+				rooms[socket.room].drawer = {};
 				io.to(socket.room).emit("update-info", rooms[socket.room].info);
 			}
 
@@ -152,13 +152,18 @@ io.on("connect", (socket) => {
 				rooms[socket.room].sockets[find_socket_index(rooms[socket.room].drawer.id)].points += 2;
 
 				update_all_scores(socket.room);
+			}
+			rooms[socket.room].number_guessed += 1;
+			if (rooms[socket.room].number_guessed >= rooms[socket.room].sockets.length - 1) {
+				rooms[socket.room].number_guessed = 0;
+				io.to(socket.room).emit("reset-game");
 
-				rooms[socket.room].number_guessed += 1;
-				if (rooms[socket.room].number_guessed >= rooms[socket.room].sockets.length - 1) {
-					rooms[socket.room].number_guessed = 0;
-					io.to(socket.room).emit("reset-game");
-					start_seq(socket.room);
-				}
+				rooms[socket.room].info = "Waiting for more players...";
+				io.to(socket.room).emit("update-info", rooms[socket.room].info);
+
+				rooms[socket.room].drawer = {};
+
+				start_seq(socket.room);
 			}
 		} 
 	})
