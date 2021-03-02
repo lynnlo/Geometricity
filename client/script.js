@@ -23,6 +23,7 @@ var higher
 var size
 var pen
 var erase
+var time
 
 var color_black
 var color_white
@@ -64,6 +65,7 @@ function on_load() {
 	color_blue = document.getElementById("color_blue");
 
 	players = document.getElementById("players");
+	time = document.getElementById("time");
 
 	clear = document.getElementById("clear");
 	lower = document.getElementById("lower");
@@ -114,7 +116,7 @@ function on_load() {
 	socket.on("start-game", (name, list) => {
 		drawer.innerHTML = "Drawer : " + name;
 
-		i = 0;
+		let i = 0;
 		choices.forEach((x) => {
 			x.innerHTML = list[i];
 			i += 1;
@@ -168,6 +170,7 @@ function on_load() {
 		color_blue.disabled = true;
 
 		size.innerHTML = pen_size + (eraser ? "E" : "")
+		size.style.color = "#050505"
 
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -194,6 +197,10 @@ function on_load() {
 			context.drawImage(image, 0, 0);
 		}
 		delete image;
+	})
+
+	socket.on("time", (t) => {
+		time.innerHTML = t;
 	})
 
 	// Calibration
@@ -282,22 +289,27 @@ function on_load() {
 
 	color_black.onclick = () => {
 		context.strokeStyle = "#050505";
+		size.style.color = "#353535";
 	}
 
 	color_white.onclick = () => {
 		context.strokeStyle = "#aaaaaa";
+		size.style.color = "#dddddd";
 	}
 
 	color_red.onclick = () => {
 		context.strokeStyle = "#aa0505";
+		size.style.color = "#dd3535";
 	}
 
 	color_green.onclick = () => {
 		context.strokeStyle = "#05aa05";
+		size.style.color = "#35dd35";
 	}
 
 	color_blue.onclick = () => {
 		context.strokeStyle = "#0505aa";
+		size.style.color = "#3535dd";
 	}
 
 }

@@ -20,14 +20,26 @@ http.listen(3000, function () {
 
 io.on("connect", (socket) => {
 
-	find_socket_index = (socket_id) => {
-		return rooms[socket.room].sockets.findIndex((x) => {return x.id == socket_id});
+	find_socket_index = (id, socket_id) => {
+		return rooms[id].sockets.findIndex((x) => {return x.id == socket_id});
 	}
 
 	update_all_scores = (id) => {
 		for (i=0; i<rooms[id].sockets.length; i++){
 			rooms[id].sockets[i].socket.emit("update-score", rooms[id].sockets[i].points);
 		}
+	}
+
+	reset_game = (id) => {
+		rooms[socket.room].number_guessed = 0;
+		io.to(socket.room).emit("reset-game");
+
+		rooms[socket.room].info = "Waiting for more players...";
+		io.to(socket.room).emit("update-info", rooms[socket.room].info);
+
+		rooms[socket.room].drawer = {};
+		clearInterval(rooms[id].interval);
+		clearTimeout(rooms[id].timeout)
 	}
 
 	start_seq = (id) => {
@@ -39,7 +51,7 @@ io.on("connect", (socket) => {
 				drawer = rooms[id].sockets[random.int(0, rooms[id].players.length - 1)];
 				rooms[id].drawer = drawer;
 				
-				list = [];
+				let list = [];
 				for (i=0; i<4; i++){
 					word = words.math[random.int(0, words.math.length - 1)];
 					if (!list.find((x) => {return x == word})){
@@ -58,11 +70,28 @@ io.on("connect", (socket) => {
 				update_all_scores(id);
 
 				io.to(id).emit("start-game", drawer.name, rooms[id].list);
+
+				rooms[id].timeout = setTimeout(() => {
+					reset_game(socket.room);
+
+					start_seq(socket.room);
+				}, 30000)
+
+				let x = 60
+				rooms[id].interval = setInterval(() => {
+					if (x <= 0){
+						clearInterval(rooms[id].interval);
+					}
+					else {
+						x -= 1;
+						io.to(socket.room).emit("time", x);
+					}
+				}, 500)
 			}, 750)
 		}
 		else if (Object.keys(rooms[id].drawer).length > 0){
 			socket.emit("start-game", rooms[id].drawer.name, rooms[id].list);
-			socket.emit("update-info", rooms[socket.room].info);
+			socket.emit("update-info", rooms[id].info);
 		}
 	}
 
@@ -72,10 +101,7 @@ io.on("connect", (socket) => {
 			rooms[socket.room].sockets.splice(rooms[socket.room].sockets.findIndex((x) => {return x.id == socket.id}), 1);
 
 			if (rooms[socket.room].drawer.id == socket.id){
-				io.to(socket.room).emit("reset-game");
-				rooms[socket.room].info = "Waiting for more players...";
-				rooms[socket.room].drawer = {};
-				io.to(socket.room).emit("update-info", rooms[socket.room].info);
+				reset_game(socket.room);
 			}
 
 			io.to(socket.room).emit("all-players", [...rooms[socket.room].players]);
@@ -147,21 +173,15 @@ io.on("connect", (socket) => {
 	socket.on("guess", (guess) => {
 		if (rooms[socket.room].drawer.id != socket.id){
 			if (rooms[socket.room].word == guess){
-				rooms[socket.room].sockets[find_socket_index(socket.id)].points += 5;
+				rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].points += 5;
 
-				rooms[socket.room].sockets[find_socket_index(rooms[socket.room].drawer.id)].points += 2;
+				rooms[socket.room].sockets[find_socket_index(socket.room, rooms[socket.room].drawer.id)].points += 2;
 
 				update_all_scores(socket.room);
 			}
 			rooms[socket.room].number_guessed += 1;
 			if (rooms[socket.room].number_guessed >= rooms[socket.room].sockets.length - 1) {
-				rooms[socket.room].number_guessed = 0;
-				io.to(socket.room).emit("reset-game");
-
-				rooms[socket.room].info = "Waiting for more players...";
-				io.to(socket.room).emit("update-info", rooms[socket.room].info);
-
-				rooms[socket.room].drawer = {};
+				reset_game(socket.room);
 
 				start_seq(socket.room);
 			}
