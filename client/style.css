@@ -109,8 +109,12 @@ error {
 	padding: 4px;
 }
 
-w::after{
+w::after {
 	content: "      ";
+}
+
+#players, #chat {
+	background-color: #202020;
 }
 
 #interface { 

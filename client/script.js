@@ -10,6 +10,8 @@ var error
 
 var players
 var chat
+var message
+var send
 
 var canvas
 var room
@@ -68,6 +70,10 @@ function on_load() {
 	color_blue = document.getElementById("color_blue");
 
 	players = document.getElementById("players");
+	chat = document.getElementById("chat");
+	message = document.getElementById("message")
+	send = document.getElementById("send");
+
 	time = document.getElementById("time");
 
 	clear = document.getElementById("clear");
@@ -78,8 +84,11 @@ function on_load() {
 	erase = document.getElementById("erase");
 
 	context = canvas.getContext("2d");
-	pen_size = 1;
-	eraser = false;
+
+	// Canvas variables
+	let pen_size = 1;
+	let pen_color = "#353535";
+	let eraser = false;
 
 	name_input.value = Date.now();
 
@@ -140,9 +149,7 @@ function on_load() {
 	})
 
 	socket.on("reset-game", () => {
-		// Resets every interface to
-		drawer.innerHTML = "";
-
+		// Resets every interface
 		local_drawer = false;
 
 		pen_size = 1;
@@ -159,7 +166,7 @@ function on_load() {
 		color_blue.disabled = true;
 
 		size.innerHTML = pen_size + (eraser ? "E" : "");
-		size.style.color = "#050505";
+		pen_color = "#050505";
 
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -169,10 +176,16 @@ function on_load() {
 	})
 
 	socket.on("update-players", (names, scores) => {
-		let board = "";
+		let board = "<br>";
+		let lines = 1;
 
 		for (let i=0; i<names.length; i++){
 			board += names[i] + " : " + scores[i] + "<br>";
+			lines += 3;
+		}
+
+		for (lines; lines<30; lines++){
+			board += "<br>";
 		}
 
 		console.log(names);
@@ -201,6 +214,22 @@ function on_load() {
 		delete image;
 	})
 
+	socket.on("update-chat", (messages) => {
+		let board = "<br>";
+		let lines = 1;
+
+		for (let i=0; i<messages.length; i++){
+			board += messages[i][0] + " : " + messages[i][1] + "<br>";
+			lines += 1;		
+		}
+
+		for (lines; lines<30; lines++){
+			board += "<br>";
+		}
+
+		chat.innerHTML = board;
+	})
+
 	socket.on("time", (t) => {
 		time.innerHTML = t;
 	})
@@ -212,7 +241,6 @@ function on_load() {
 	unit_size = 1 * (document.body.clientWidth / 500);
 	unit = (n = 1) => { return n * unit_size };
 
-	// // Painter
 	if (pen_size <= 1) {
 		lower.disabled = "true";
 	}
@@ -220,16 +248,16 @@ function on_load() {
 		higher.disabled = "true";
 	}
 
-	// When mouse is down start a path
-	canvas.addEventListener("mousedown", (e) => {
+	// Start a path when mouse is down 
+	canvas.addEventListener("mousedown", () => {
 		if (local_drawer){
 			draw = true;
-			context.strokeStyle = (eraser ? "#353535" : context.stroke);
+			context.strokeStyle = (eraser ? "#353535" : pen_color);
 			context.beginPath();
 		}
 	});
 
-	// When mouse moves adds a point to the path
+	// Adds a point to the path when mouse moves 
 	canvas.addEventListener("mousemove", (e) => {
 		if (local_drawer && draw) {
 			context.lineTo(e.layerX, e.layerY);
@@ -244,8 +272,16 @@ function on_load() {
 		}
 	})
 
-	// When the mouse is up close the path
-	canvas.addEventListener("mouseup", (e) => {
+	// Close the path when the mouse is up 
+	canvas.addEventListener("mouseup", () => {
+		if (local_drawer){
+			draw = false;
+			context.closePath();
+		}
+	});
+
+	// Close the path when the canvas loses focus
+	canvas.addEventListener("mouseout", () => {
 		if (local_drawer){
 			draw = false;
 			context.closePath();
@@ -259,6 +295,7 @@ function on_load() {
 		socket.emit("update-canvas", canvas.toDataURL());
 	}
 
+	// Pensize
 	lower.onclick = () => {
 		pen_size -= 1;
 		if (pen_size <= 1) {
@@ -270,7 +307,6 @@ function on_load() {
 		size.innerHTML = pen_size + (eraser ? "E" : "");
 	}
 
-	// Pensize
 	higher.onclick = () => {
 		pen_size += 1;
 		if (pen_size >= 8) {
@@ -295,28 +331,34 @@ function on_load() {
 
 	// Colors
 	color_black.onclick = () => {
-		context.strokeStyle = "#050505";
+		pen_color = "#050505";
 		size.style.color = "#353535";
 	}
 
 	color_white.onclick = () => {
-		context.strokeStyle = "#aaaaaa";
+		pen_color = "#aaaaaa";
 		size.style.color = "#dddddd";
 	}
 
 	color_red.onclick = () => {
-		context.strokeStyle = "#aa0505";
+		pen_color = "#aa0505";
 		size.style.color = "#dd3535";
 	}
 
 	color_green.onclick = () => {
-		context.strokeStyle = "#05aa05";
+		pen_color = "#05aa05";
 		size.style.color = "#35dd35";
 	}
 
 	color_blue.onclick = () => {
-		context.strokeStyle = "#0505aa";
+		pen_color = "#0505aa";
 		size.style.color = "#3535dd";
+	}
+
+	// Sends a chat message to the server on click
+	send.onclick = () => {
+		socket.emit("send-message", message.value);
+		message.value = "";
 	}
 
 }

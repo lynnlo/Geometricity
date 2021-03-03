@@ -42,6 +42,7 @@ io.on("connect", (socket) => {
 			rooms[id].sockets[i].socket.emit("update-score", rooms[id].sockets[i].points);
 		}
 		io.to(id).emit("update-players", players, points);
+		io.to(id).emit("update-chat", rooms[id].chat);
 	}
 
 	// Resets the round
@@ -69,7 +70,7 @@ io.on("connect", (socket) => {
 				
 				let list = [];
 				for (i=0; i<4; i++){
-					word = words.math[random.int(0, words.math.length - 1)];
+					word = words[rooms[id].package][random.int(0, words.math.length - 1)];
 					if (!list.find((x) => {return x == word})){
 						list.push(word);
 					}
@@ -91,9 +92,9 @@ io.on("connect", (socket) => {
 					reset_game(socket.room);
 
 					start_seq(socket.room);
-				}, 30000)
+				}, 45000)
 
-				let x = 60
+				let x = 45
 				rooms[id].interval = setInterval(() => {
 					if (x <= 0){
 						clearInterval(rooms[id].interval);
@@ -102,7 +103,7 @@ io.on("connect", (socket) => {
 						x -= 1;
 						io.to(socket.room).emit("time", x);
 					}
-				}, 500)
+				}, 1000)
 			}, 750)
 		}
 		else if (Object.keys(rooms[id].drawer).length > 0){
@@ -139,9 +140,11 @@ io.on("connect", (socket) => {
 			],
 			info: "Waiting for more players...",
 			word: "",
+			package: "standard",
 			drawer: {},
 			points: {},
 			list: [],
+			chat: [],
 			number_guessed: 0,
 		}
 
@@ -208,5 +211,17 @@ io.on("connect", (socket) => {
 		if (rooms[socket.room].drawer.id == socket.id){
 			socket.to(socket.room).emit("update-canvas", data);
 		}
+	})
+
+	// Recieves chat message and fowards it to all players
+	socket.on("send-message", (message) => {
+		// TODO : Censor Chat
+		rooms[socket.room].chat.push([rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].name, message])
+		
+		if (rooms[socket.room].chat.length > 30) {
+			rooms[socket.room].chat.splice(0, 1);
+		}
+
+		update_players(socket.room);
 	})
 })
