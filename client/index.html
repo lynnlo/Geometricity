@@ -44,68 +44,81 @@
 		<div id="game" style="display: none;">
 			<img src="images/Geometricity.png">
 
-			<br><br>
-
 			<h3 id="room">
 				Room ID : 
 			</h3>
-
-			<h1 id="information">
-				Information
-			</h1>
 
 			<h1 id="points">
 				Points : 0
 			</h1>
 
-			<h1 id="drawer">
-			</h1>
-
-			<div id="players">
-			
-			</div>
-
 			<h1 id="time">
 			</h1>
 
-			<br>
-
-			<canvas id="canvas" width="1600" height="900"></canvas>
-			<br>
-
-			<div>
-				<button id="clear" disabled="true"> Clear </button>
-
-				<w></w>
-
-				<button id="lower" disabled="true"> - </button>
-				<p id="size" disabled="true" style="color: #353535;"> 1 </p>
-				<button id="higher" disabled="true"> + </button>
-
-				<w></w>
-
-				<button id="pen" disabled="true"> Pen </button>
-				<button id="erase" disabled="true"> Erase </button>
-			</div>
-
-			<br>
-
-			<div>
-				<button id="color_black" disabled="true" style="background-color: #050505; color: #353535;"> Bl </button>
-				<button id="color_white" disabled="true" style="background-color: #aaaaaa; color:#dddddd;"> Wh </button>
-				<button id="color_red" disabled="true" style="background-color: #aa0505; color:#dd3535;"> Rd </button>
-				<button id="color_green" disabled="true" style="background-color: #05aa05;color:#35dd35;"> Gr </button>
-				<button id="color_blue" disabled="true" style="background-color: #0505aa; color:#3535dd;"> Bu </button>
-			</div>
-
 			<br><br>
-			<button class="choices" disabled="true">PH</button>
-			<w></w>
-			<button class="choices" disabled="true">PH</button>
-			<br><br>
-			<button class="choices" disabled="true">PH</button>
-			<w></w>
-			<button class="choices" disabled="true">PH</button>
+			<div id="interface">
+				<div class="box" style="width: 25%; text-align: center;">
+
+					<h3>
+						Players
+					</h3>
+
+					<h1 id="drawer">
+					</h1>
+		
+					<div id="players">
+					
+					</div>
+				</div>
+				
+				<br>
+	
+				<div class="box" style="width: 50%;">
+					<canvas id="canvas" width="1600" height="900"></canvas>
+					
+					<br>
+	
+					<h1 id="information">
+						Information
+					</h1>
+	
+					<br>
+	
+					<div>
+						<button id="clear" disabled="true"> Clear </button>
+	
+						<w></w>
+	
+						<button id="lower" disabled="true"> - </button>
+						<p id="size" disabled="true" style="color: #353535;"> 1 </p>
+						<button id="higher" disabled="true"> + </button>
+	
+						<w></w>
+	
+						<button id="pen" disabled="true"> Pen </button>
+						<button id="erase" disabled="true"> Erase </button>
+					</div>
+	
+					<br>
+	
+					<div>
+						<button id="color_black" disabled="true" style="background-color: #050505; color: #353535;"> Bl </button>
+						<button id="color_white" disabled="true" style="background-color: #aaaaaa; color:#dddddd;"> Wh </button>
+						<button id="color_red" disabled="true" style="background-color: #aa0505; color:#dd3535;"> Rd </button>
+						<button id="color_green" disabled="true" style="background-color: #05aa05;color:#35dd35;"> Gr </button>
+						<button id="color_blue" disabled="true" style="background-color: #0505aa; color:#3535dd;"> Bu </button>
+					</div>
+	
+					<br><br>
+					<button class="choices" disabled="true">PH</button>
+					<w></w>
+					<button class="choices" disabled="true">PH</button>
+					<br><br>
+					<button class="choices" disabled="true">PH</button>
+					<w></w>
+					<button class="choices" disabled="true">PH</button>
+				</div>
+			</div>
 		</div>
 	</body>
 </html>

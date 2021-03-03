@@ -1,6 +1,6 @@
-// Copyright 2021 Lynn O.
+// Copyright 2021 Lynn O. All rights reserved
 
-// Define Variables
+// Define variables
 var index
 var game
 
@@ -38,12 +38,15 @@ var draw = false;
 var local_name;
 var local_drawer = false;
 
+// Set PI
+Math.PI = 3;
+
 // On load
 function on_load() {
-	// Define Socket
+	// Define socket
 	socket = io();
 
-	// Load Elements
+	// Load elements
 	index = document.getElementById("index");
 	game = document.getElementById("game");
 
@@ -100,19 +103,6 @@ function on_load() {
 		error.style.display = "inherit";
 	})
 
-	socket.on("all-players", (list) => {
-		players.innerHTML = list.join(" ");
-		socket.emit("update-canvas", canvas.toDataURL());
-	})
-
-	socket.on("new-player", (name) => {
-		console.log(name)
-	})
-
-	socket.on("remove-player", (name) => {
-		console.log(name) 
-	})
-
 	socket.on("start-game", (name, list) => {
 		drawer.innerHTML = "Drawer : " + name;
 
@@ -123,9 +113,7 @@ function on_load() {
 
 			x.onclick = () => {
 				socket.emit("guess", x.innerHTML);
-				console.log("guessed")
 				choices.forEach((a) => {a.disabled = true});
-				console.log(x.disabled)
 			}
 		})
 
@@ -152,10 +140,11 @@ function on_load() {
 	})
 
 	socket.on("reset-game", () => {
+		// Resets every interface to
 		drawer.innerHTML = "";
 
 		local_drawer = false;
-		
+
 		pen_size = 1;
 		eraser = false;
 		clear.disabled = true;
@@ -169,14 +158,27 @@ function on_load() {
 		color_green.disabled = true;
 		color_blue.disabled = true;
 
-		size.innerHTML = pen_size + (eraser ? "E" : "")
-		size.style.color = "#050505"
+		size.innerHTML = pen_size + (eraser ? "E" : "");
+		size.style.color = "#050505";
 
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
 		choices.forEach((x) => {
 			x.disabled = true;
 		})
+	})
+
+	socket.on("update-players", (names, scores) => {
+		let board = "";
+
+		for (let i=0; i<names.length; i++){
+			board += names[i] + " : " + scores[i] + "<br>";
+		}
+
+		console.log(names);
+		console.log(board);
+
+		players.innerHTML = board;
 	})
 
 	socket.on("update-info", (info) => {
@@ -218,29 +220,23 @@ function on_load() {
 		higher.disabled = "true";
 	}
 
+	// When mouse is down start a path
 	canvas.addEventListener("mousedown", (e) => {
 		if (local_drawer){
 			draw = true;
 			context.strokeStyle = (eraser ? "#353535" : context.stroke);
 			context.beginPath();
 		}
-		
 	});
 
-	canvas.addEventListener("mouseup", (e) => {
-		if (local_drawer){
-			draw = false;
-			context.closePath();
-		}
-	});
-
+	// When mouse moves adds a point to the path
 	canvas.addEventListener("mousemove", (e) => {
 		if (local_drawer && draw) {
 			context.lineTo(e.layerX, e.layerY);
 			context.lineWidth = unit(pen_size + (eraser ? 3 : 0));
 			context.stroke();
 
-			// Send image
+			// Send canvas
 			socket.emit("update-canvas", canvas.toDataURL());
 		}
 		else {
@@ -248,10 +244,18 @@ function on_load() {
 		}
 	})
 
+	// When the mouse is up close the path
+	canvas.addEventListener("mouseup", (e) => {
+		if (local_drawer){
+			draw = false;
+			context.closePath();
+		}
+	});
+
 	clear.onclick = () => {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
-		// Send image
+		// Send canvas
 		socket.emit("update-canvas", canvas.toDataURL());
 	}
 
@@ -263,9 +267,10 @@ function on_load() {
 		if (pen_size < 8) {
 			higher.disabled = "";
 		}
-		size.innerHTML = pen_size + (eraser ? "E" : "")
+		size.innerHTML = pen_size + (eraser ? "E" : "");
 	}
 
+	// Pensize
 	higher.onclick = () => {
 		pen_size += 1;
 		if (pen_size >= 8) {
@@ -274,7 +279,7 @@ function on_load() {
 		if (pen_size > 1) {
 			lower.disabled = "";
 		}
-		size.innerHTML = pen_size + (eraser ? "E" : "")
+		size.innerHTML = pen_size + (eraser ? "E" : "");
 	}
 
 	pen.onclick = () => {
@@ -282,11 +287,13 @@ function on_load() {
 		size.innerHTML = pen_size;
 	}
 
+	// Clears the canvas
 	erase.onclick = () => {
 		eraser = true;
 		size.innerHTML = pen_size + "E";
 	}
 
+	// Colors
 	color_black.onclick = () => {
 		context.strokeStyle = "#050505";
 		size.style.color = "#353535";
@@ -314,6 +321,7 @@ function on_load() {
 
 }
 
+// Sends a create request when create button is pressed
 function create_game() {
 	if (name_input.value && name_input.value.length >= 3) {
 		if (id_input.value && id_input.value.length == 4) {
@@ -330,6 +338,7 @@ function create_game() {
 	}
 }
 
+// Sends a join request when create button is join
 function join_game() {
 	if (name_input.value && name_input.value.length >= 3) {
 		if (id_input.value && id_input.value.length == 4) {
@@ -346,6 +355,7 @@ function join_game() {
 	}
 }
 
+// Clears error when an input is entered
 function clear_error() {
 	error.style.display = "none";
 }

@@ -8,7 +8,7 @@ body {
 }
 
 img {
-	width: 15%;
+	width: 10%;
 	-webkit-user-drag: none;
 }
 
@@ -22,7 +22,7 @@ p {
 }
 
 input {
-	font-size: 200%;
+	font-size: 175%;
 
 	text-align: center;
 	width: 35%;
@@ -38,7 +38,7 @@ input {
 }
 
 button {
-	font-size: 115%;
+	font-size: 125%;
 	background-color: #202020;
 	color: #909090;
 
@@ -87,11 +87,15 @@ button:disabled:active {
 }
 
 .choices {
-	font-size: 250%;
+	font-size: 200%;
 
 	display: inline-block;
 	width: 45%;
 	padding: 1%;
+}
+
+.box {
+	box-sizing: border-box;
 }
 
 w {
@@ -107,6 +111,10 @@ error {
 
 w::after{
 	content: "      ";
+}
+
+#interface { 
+	display: flex;
 }
 
 #information, #points, #drawer, #time {

@@ -1,3 +1,6 @@
+// Copyright 2021 Lynn O. All rights reserved
+
+// Requirements
 const express = require("express");
 const app = express();
 const http = require("http").Server(app);
@@ -6,49 +9,62 @@ const path = require("path");
 const random = require("random");
 const fs = require("fs")
 
+// Define variables
 var dir = path.join(__dirname, "client");
 var rooms = {};
 
 var words = JSON.parse(fs.readFileSync("words.json"));
 
+// Serves a static page
 app.use(express.static(dir));
 
-http.listen(3000, function () {
-    console.log("Starting on port : " + 3000);
-	console.log("http://localhost:3000");
+// Opens given port or 3000
+http.listen(process.env.PORT || 3000, function () {
+    console.log("Starting on port : " + (process.env.PORT || 3000));
+	console.log("http://localhost:" + (process.env.PORT || 3000));
 })
 
 io.on("connect", (socket) => {
 
+	// Find the socket from a room with a given id
 	find_socket_index = (id, socket_id) => {
 		return rooms[id].sockets.findIndex((x) => {return x.id == socket_id});
 	}
 
-	update_all_scores = (id) => {
+	// Update names and score
+	update_players = (id) => {
+		let players = [];
+		let points = [];
+
 		for (i=0; i<rooms[id].sockets.length; i++){
+			players.push(rooms[id].sockets[i].name);
+			points.push(rooms[id].sockets[i].points);
 			rooms[id].sockets[i].socket.emit("update-score", rooms[id].sockets[i].points);
 		}
+		io.to(id).emit("update-players", players, points);
 	}
 
+	// Resets the round
 	reset_game = (id) => {
-		rooms[socket.room].number_guessed = 0;
-		io.to(socket.room).emit("reset-game");
+		rooms[id].number_guessed = 0;
+		io.to(id).emit("reset-game");
 
-		rooms[socket.room].info = "Waiting for more players...";
-		io.to(socket.room).emit("update-info", rooms[socket.room].info);
+		rooms[id].info = "Waiting for more players...";
+		io.to(id).emit("update-info", rooms[id].info);
 
-		rooms[socket.room].drawer = {};
+		rooms[id].drawer = {};
 		clearInterval(rooms[id].interval);
-		clearTimeout(rooms[id].timeout)
+		clearTimeout(rooms[id].timeout);
 	}
 
+	// Let's a player join a room
 	start_seq = (id) => {
-		if (rooms[id].players.length >= 2 && Object.keys(rooms[id].drawer).length == 0){
+		if (rooms[id].sockets.length >= 2 && Object.keys(rooms[id].drawer).length == 0){
 			rooms[id].info = "Game starting...";
 			io.to(id).emit("update-info", rooms[id.info]);
 
 			setTimeout(() => {
-				drawer = rooms[id].sockets[random.int(0, rooms[id].players.length - 1)];
+				drawer = rooms[id].sockets[random.int(0, rooms[id].sockets.length - 1)];
 				rooms[id].drawer = drawer;
 				
 				let list = [];
@@ -67,7 +83,7 @@ io.on("connect", (socket) => {
 				rooms[id].info = "Game has started!";
 				rooms[id].drawer.socket.to(id).emit("update-info", rooms[id].info);
 				rooms[id].drawer.socket.emit("update-info", "Your word is : " + rooms[id].word + ".");
-				update_all_scores(id);
+				update_players(id);
 
 				io.to(id).emit("start-game", drawer.name, rooms[id].list);
 
@@ -95,19 +111,20 @@ io.on("connect", (socket) => {
 		}
 	}
 
+	// Remove player data on leave
 	socket.on("disconnect", () => {
 		if (socket.room){
-			rooms[socket.room].players.splice(rooms[socket.room].players.indexOf(socket.name), 1);
 			rooms[socket.room].sockets.splice(rooms[socket.room].sockets.findIndex((x) => {return x.id == socket.id}), 1);
 
 			if (rooms[socket.room].drawer.id == socket.id){
 				reset_game(socket.room);
 			}
 
-			io.to(socket.room).emit("all-players", [...rooms[socket.room].players]);
+			update_players(socket.room);
 		} 
 	})
 
+	// Checks if room exists if not create it
 	socket.on("create-request", (name, id) => {
 		if (!(id in rooms)) {
 			rooms[id] = {
@@ -119,9 +136,6 @@ io.on("connect", (socket) => {
 					socket: socket,
 					points: 0,
 				}
-			],
-			players: [
-				name,
 			],
 			info: "Waiting for more players...",
 			word: "",
@@ -136,7 +150,7 @@ io.on("connect", (socket) => {
 
 		socket.join(id);
 		socket.emit("create-success", id, name);
-		io.to(id).emit("all-players", [...rooms[id].players]);
+		update_players(socket.room);
 
 		start_seq(id);
 		io.to(id).emit("update-info", rooms[id].info);
@@ -146,8 +160,9 @@ io.on("connect", (socket) => {
 		}
 	})
 
+	// Checks if room exists if so join it
 	socket.on("join-request", (name, id) => {
-		if ((id in rooms) && (rooms[id].players.indexOf(name) == -1)) {
+		if ((id in rooms) && !(rooms[id].sockets.find((x) => {x == name}))) {
 			rooms[id].sockets.push({
 				id : socket.id,
 				name : name,
@@ -155,13 +170,12 @@ io.on("connect", (socket) => {
 				points: 0,
 			})
 
-			rooms[id].players.push(name);
 			socket.room = id;
 			socket.name = name;
 
 			socket.join(id);
 			socket.emit("join-success", id, name);
-			io.to(id).emit("all-players", [...rooms[id].players]);
+			update_players(socket.room);
 
 			start_seq(id);
 		}
@@ -170,6 +184,7 @@ io.on("connect", (socket) => {
 		}
 	})
 
+	// Checks a guess and reward accordingly
 	socket.on("guess", (guess) => {
 		if (rooms[socket.room].drawer.id != socket.id){
 			if (rooms[socket.room].word == guess){
@@ -177,7 +192,7 @@ io.on("connect", (socket) => {
 
 				rooms[socket.room].sockets[find_socket_index(socket.room, rooms[socket.room].drawer.id)].points += 2;
 
-				update_all_scores(socket.room);
+				update_players(socket.room);
 			}
 			rooms[socket.room].number_guessed += 1;
 			if (rooms[socket.room].number_guessed >= rooms[socket.room].sockets.length - 1) {
@@ -188,6 +203,7 @@ io.on("connect", (socket) => {
 		} 
 	})
 
+	// Sends canvas to all players
 	socket.on("update-canvas", (data) => {
 		if (rooms[socket.room].drawer.id == socket.id){
 			socket.to(socket.room).emit("update-canvas", data);

@@ -1,5 +1,5 @@
 {
-	"math" : [
+	"math": [
 		"add",
 		"subtract",
 		"multiply",
@@ -18,5 +18,8 @@
 		"eight",
 		"nine",
 		"ten"
+	],
+	"standard": [
+
 	]
 }
