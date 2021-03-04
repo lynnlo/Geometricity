@@ -221,7 +221,7 @@ io.on("connect", (socket) => {
 
 	// Checks a guess and reward accordingly
 	socket.on("guess", (guess) => {
-		if (rooms[socket.room].drawer.id != socket.id){
+		if (rooms[socket.room] && rooms[socket.room].drawer.id != socket.id){
 			if (rooms[socket.room].word == guess){
 				rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].points += 5;
 

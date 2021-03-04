@@ -32,6 +32,9 @@ var color_white
 var color_red
 var color_green
 var color_blue
+var color_yellow
+var color_teal
+var color_magenta
 
 var context
 var socket
@@ -69,6 +72,9 @@ function on_load() {
 	color_red = document.getElementById("color_red");
 	color_green = document.getElementById("color_green");
 	color_blue = document.getElementById("color_blue");
+	color_yellow = document.getElementById("color_yellow");
+	color_teal = document.getElementById("color_teal");
+	color_magenta = document.getElementById("color_magenta");
 
 	players = document.getElementById("players");
 	chat = document.getElementById("chat");
@@ -373,6 +379,21 @@ function on_load() {
 	color_blue.onclick = () => {
 		pen_color = "#0505aa";
 		size.style.color = "#3535dd";
+	}
+
+	color_yellow.onclick = () => {
+		pen_color = "#aaaa05";
+		size.style.color = "#dddd35";
+	}
+
+	color_teal.onclick = () => {
+		pen_color = "#05aaaa";
+		size.style.color = "#35dddd";
+	}
+
+	color_magenta.onclick = () => {
+		pen_color = "#aa05aa";
+		size.style.color = "#dd35dd";
 	}
 
 	// Sends a chat message to the server on click
