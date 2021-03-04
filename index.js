@@ -5,9 +5,13 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
+const leo = require("leo-profanity");
 const path = require("path");
 const random = require("random");
 const fs = require("fs")
+
+// Set up packages
+leo.loadDictionary("en")
 
 // Define variables
 var dir = path.join(__dirname, "client");
@@ -117,11 +121,27 @@ io.on("connect", (socket) => {
 		if (socket.room){
 			rooms[socket.room].sockets.splice(rooms[socket.room].sockets.findIndex((x) => {return x.id == socket.id}), 1);
 
-			if (rooms[socket.room].drawer.id == socket.id){
-				reset_game(socket.room);
-			}
+			if (rooms[socket.room].sockets.length > 0){
+				// Reset the round if the current drawer left
+				if (rooms[socket.room].drawer.id == socket.id){
+					reset_game(socket.room);
+				}
 
-			update_players(socket.room);
+				// Give admin to the oldest player if the current admin left
+				if (rooms[socket.room].admin.id == socket.id){
+					rooms[socket.room].admin = {
+						id: rooms[socket.room].sockets[0].id,
+						name: rooms[socket.room].sockets[0].name,
+						socket: rooms[socket.room].sockets[0].socket,
+					}
+				}
+
+				rooms[socket.room].admin.socket.emit("update-admin", true);
+				update_players(socket.room);
+			}
+			else {
+				delete rooms[socket.room];
+			}
 		} 
 	})
 
@@ -138,6 +158,11 @@ io.on("connect", (socket) => {
 					points: 0,
 				}
 			],
+			admin: {
+				id: socket.id,
+				name: name,
+				socket: socket,
+			},
 			info: "Waiting for more players...",
 			word: "",
 			package: "standard",
@@ -153,10 +178,13 @@ io.on("connect", (socket) => {
 
 		socket.join(id);
 		socket.emit("create-success", id, name);
+
+		rooms[id].admin.socket.emit("update-admin", true);
 		update_players(socket.room);
 
-		start_seq(id);
 		io.to(id).emit("update-info", rooms[id].info);
+
+		start_seq(id);
 		}
 		else {
 			socket.emit("connection-failed");
@@ -178,7 +206,11 @@ io.on("connect", (socket) => {
 
 			socket.join(id);
 			socket.emit("join-success", id, name);
+
+			rooms[id].admin.socket.emit("update-admin", true);
 			update_players(socket.room);
+
+			io.to(id).emit("update-info", rooms[id].info);
 
 			start_seq(id);
 		}
@@ -216,12 +248,23 @@ io.on("connect", (socket) => {
 	// Recieves chat message and fowards it to all players
 	socket.on("send-message", (message) => {
 		// TODO : Censor Chat
-		rooms[socket.room].chat.push([rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].name, message])
+		rooms[socket.room].chat.push([rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].name, leo.clean(message, "*")]);
 		
 		if (rooms[socket.room].chat.length > 30) {
 			rooms[socket.room].chat.splice(0, 1);
 		}
 
 		update_players(socket.room);
+	})
+
+	// Handles a ban request
+	socket.on("kick-request", (name) => {
+		if (rooms[socket.room].admin.id == socket.id){
+			rooms[socket.room].sockets.forEach((x) => {
+				if (x.name == name) {
+					x.socket.emit("kick");
+				}	
+			})
+		}
 	})
 })

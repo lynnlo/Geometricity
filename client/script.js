@@ -39,6 +39,7 @@ var socket
 var draw = false;
 var local_name;
 var local_drawer = false;
+var local_admin = false;
 
 // Set PI
 Math.PI = 3;
@@ -175,13 +176,21 @@ function on_load() {
 		})
 	})
 
+	socket.on("update-admin", (admin) => {
+		local_admin = admin;
+	})
+
 	socket.on("update-players", (names, scores) => {
 		let board = "<br>";
-		let lines = 1;
+		let lines = 0;
 
 		for (let i=0; i<names.length; i++){
-			board += names[i] + " : " + scores[i] + "<br>";
-			lines += 3;
+			// Adds a kick button to all players if the player is an admin
+			board += (local_admin ? "<button class='kicks'" + (names[i] == local_name ? "disabled='true'" : "") + "> Kick </button> "  : "") 
+			
+			// Display all player names
+			board += (names[i] == local_name ? "<b>" + names[i] + "</b>" : names[i]) + " : " + scores[i] + "<br>";
+			lines += 1;
 		}
 
 		for (lines; lines<30; lines++){
@@ -192,6 +201,13 @@ function on_load() {
 		console.log(board);
 
 		players.innerHTML = board;
+		
+		// Sends the kick request to the server if their kick button is clicked
+		[...document.getElementsByClassName("kicks")].forEach((x, i) => {
+			x.onclick = () => {
+				socket.emit("kick-request", names[i]);
+			}
+		})
 	})
 
 	socket.on("update-info", (info) => {
@@ -216,7 +232,7 @@ function on_load() {
 
 	socket.on("update-chat", (messages) => {
 		let board = "<br>";
-		let lines = 1;
+		let lines = 0;
 
 		for (let i=0; i<messages.length; i++){
 			board += messages[i][0] + " : " + messages[i][1] + "<br>";
@@ -232,6 +248,10 @@ function on_load() {
 
 	socket.on("time", (t) => {
 		time.innerHTML = t;
+	})
+
+	socket.on("kick", () => {
+		window.location.reload();
 	})
 
 	// Calibration
@@ -360,7 +380,6 @@ function on_load() {
 		socket.emit("send-message", message.value);
 		message.value = "";
 	}
-
 }
 
 // Sends a create request when create button is pressed
