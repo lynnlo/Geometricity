@@ -67,17 +67,7 @@ button:active {
 
 button:disabled {
 	background-color: #151515;
-	color: #909090;
-}
-
-button:disabled:hover {
-	background-color: #151515;
-	color: #909090;
-}
-
-button:disabled:active {
-	background-color: #151515;
-	color: #909090;
+	color: #909090 ;
 }
 
 .menu {
@@ -114,7 +104,9 @@ w::after {
 }
 
 #players, #chat {
+	padding: 1%;
 	background-color: #202020;
+	text-align: left;
 }
 
 #interface { 

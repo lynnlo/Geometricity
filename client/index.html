@@ -19,22 +19,17 @@
 			<br><br>
 
 			<h2> Name </h2>
-			<input id="name_input" type="text" onkeypress="clear_error()" autofocus="true" maxlength="12" value="test"> </input>
+			<input id="name_input" type="text" onkeypress="key_press()" autofocus="true" maxlength="12" value="test"> </input>
 
 			<br><br>
 			<br><br>
 
 			<h2> Game ID </h2>
-			<input id="id_input" type="text" onkeypress="clear_error()" autocomplete="false" maxlength="4" value="test"> </input>
+			<input id="id_input" type="text" onkeypress="key_press()" autocomplete="false" maxlength="4" value="test"> </input>
 
 			<br><br>
 
-			<button class="menu" onclick="join_game()"> Join Game </button>
-
-			<br><br>
-			<br><br>
-
-			<button class="menu" onclick="create_game()"> Create Game </button>
+			<button id="menu_button" class="menu" onclick="" style="display: none;"> </button>
 
 			<br><br>
 
@@ -101,14 +96,14 @@
 					<br>
 	
 					<div>
-						<button id="color_black" disabled="true" style="background-color: #050505; color: #353535;"> Bl </button>
-						<button id="color_white" disabled="true" style="background-color: #666666; color:#dddddd;"> Wh </button>
-						<button id="color_red" disabled="true" style="background-color: #660505; color:#dd3535;"> Rd </button>
-						<button id="color_green" disabled="true" style="background-color: #056605;color:#35dd35;"> Gr </button>
-						<button id="color_blue" disabled="true" style="background-color: #05056666; color:#3535dd;"> Bu </button>
-						<button id="color_yellow" disabled="true" style="background-color: #666605; color:#dddd35;"> Yl </button>
-						<button id="color_teal" disabled="true" style="background-color: #056666; color:#35dddd;"> Tl </button>
-						<button id="color_magenta" disabled="true" style="background-color: #660566; color:#dd35dd;"> Mg </button>
+						<button id="color_black" class="color" disabled="true" style="background-color: #050505; color: #353535;"> Bl </button>
+						<button id="color_white" class="color" disabled="true" style="background-color: #666666; color:#dddddd;"> Wh </button>
+						<button id="color_red" class="color" disabled="true" style="background-color: #660505; color:#dd3535;"> Rd </button>
+						<button id="color_green" class="color" disabled="true" style="background-color: #056605;color:#35dd35;"> Gr </button>
+						<button id="color_blue" class="color" disabled="true" style="background-color: #05056666; color:#3535dd;"> Bu </button>
+						<button id="color_yellow" class="color" disabled="true" style="background-color: #666605; color:#dddd35;"> Yl </button>
+						<button id="color_teal" class="color" disabled="true" style="background-color: #056666; color:#35dddd;"> Tl </button>
+						<button id="color_magenta" class="color" disabled="true" style="background-color: #660566; color:#dd35dd;"> Mg </button>
 					</div>
 	
 					<br><br>

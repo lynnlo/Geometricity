@@ -6,6 +6,7 @@ var game
 
 var name_input
 var id_input
+var menu_button
 var error
 
 var players
@@ -58,7 +59,9 @@ function on_load() {
 
 	name_input = document.getElementById("name_input");
 	id_input = document.getElementById("id_input");
+	menu_button = document.getElementById("menu_button");
 	error = document.getElementById("error");
+
 	canvas = document.getElementById("canvas");
 	room = document.getElementById("room")
 	information = document.getElementById("information");
@@ -92,31 +95,62 @@ function on_load() {
 
 	context = canvas.getContext("2d");
 
+	// Clears error when an input is entered
+	function key_press() {
+		socket.emit("check", id_input.value, (response) => {
+			error.style.display = "none";
+			menu_button.style.display = "";
+			if (response) {
+				menu_button.onclick = join_game;
+				menu_button.innerHTML = "Join Game";
+			}
+			else {
+				menu_button.onclick = create_game;
+				menu_button.innerHTML = "Create Game";
+			}
+		})
+		
+		setTimeout(() => {
+			if (menu_button.style.display == "none") {
+				error.innerHTML = "No compatible server was found, please try again later."
+				error.style.display = "";
+			}
+		}, 1000)
+	}
+
+	key_press();
+
 	// Canvas variables
 	let pen_size = 1;
-	let pen_color = "#353535";
+	let pen_color = "#050505";
 	let eraser = false;
 
-	name_input.value = Date.now();
+	name_input.value = Date.now().toString().slice(-6,-1) ;
 
 	// Connection
+	socket.on("disconnect", () => {
+		console.log("connection failed")
+		window.location.reload();
+	})
+
 	socket.on("create-success", (id, name) => {
 		index.style.display = "none";
-		game.style.display = "inherit";
+		game.style.display = "";
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
 	})
 
 	socket.on("join-success", (id, name) => {
 		index.style.display = "none";
-		game.style.display = "inherit";
+		game.style.display = "";
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
 	})
 
 	socket.on("connection-failed", () => {
 		error.innerHTML = "Game ID or name invalid or taken.";
-		error.style.display = "inherit";
+		error.style.display = "";
+		setTimeout(() => {key_press()}, 1500);
 	})
 
 	socket.on("start-game", (name, list) => {
@@ -128,7 +162,20 @@ function on_load() {
 			i += 1;
 
 			x.onclick = () => {
-				socket.emit("guess", x.innerHTML);
+				socket.emit("guess", x.innerHTML, (correct) => {
+					if (correct == x.innerHTML) {
+						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
+						x.style.backgroundColor = "#204020";
+					}
+					else {
+						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
+						choices.forEach((a) => {
+							if (a.innerHTML == correct){
+								a.style.backgroundColor = "#204020";
+							}
+						})
+					}
+				})
 				choices.forEach((a) => {a.disabled = true});
 			}
 		})
@@ -142,11 +189,9 @@ function on_load() {
 			pen.disabled = false;
 			erase.disabled = false;
 
-			color_black.disabled = false;
-			color_white.disabled = false;
-			color_red.disabled = false;
-			color_green.disabled = false;
-			color_blue.disabled = false;
+			[...document.getElementsByClassName("color")].forEach((x) => {
+				x.disabled = false;
+			})
 		}
 		else {
 			choices.forEach((x) => {
@@ -166,18 +211,18 @@ function on_load() {
 		pen.disabled = true;
 		erase.disabled = true;
 
-		color_black.disabled = true;
-		color_white.disabled = true;
-		color_red.disabled = true;
-		color_green.disabled = true;
-		color_blue.disabled = true;
+		[...document.getElementsByClassName("color")].forEach((x) => {
+			x.disabled = true;
+		})
 
 		size.innerHTML = pen_size + (eraser ? "E" : "");
 		pen_color = "#050505";
+		size.style.color = "#353535";
 
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
 		choices.forEach((x) => {
+			x.style.backgroundColor = "";
 			x.disabled = true;
 		})
 	})
@@ -253,7 +298,7 @@ function on_load() {
 	})
 
 	socket.on("time", (t) => {
-		time.innerHTML = t;
+		time.innerHTML = t + 1;
 	})
 
 	socket.on("kick", () => {
@@ -384,6 +429,7 @@ function on_load() {
 	color_yellow.onclick = () => {
 		pen_color = "#aaaa05";
 		size.style.color = "#dddd35";
+		console.log("yellow")
 	}
 
 	color_teal.onclick = () => {
@@ -435,9 +481,4 @@ function join_game() {
 		error.innerHTML = "Please enter a valid name of 3 or more characters!";
 		error.style.display = "inherit";
 	}
-}
-
-// Clears error when an input is entered
-function clear_error() {
-	error.style.display = "none";
 }
