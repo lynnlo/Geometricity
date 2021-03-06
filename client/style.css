@@ -37,6 +37,18 @@ input {
 	font-family: inherit;
 }
 
+textarea {
+	font-size: 175%;
+
+	text-align: center;
+	width: 35%;
+
+	background-color: #202020;
+	color: #909090;
+	
+	border-color: #151515;
+}
+
 button {
 	font-size: 125%;
 	background-color: #202020;
@@ -89,6 +101,7 @@ button:disabled {
 }
 
 w {
+	font-size: 125%;
 	white-space: pre;
 }
 
@@ -100,7 +113,7 @@ error {
 }
 
 w::after {
-	content: "      ";
+	content: "";
 }
 
 #players, #chat {

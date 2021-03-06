@@ -19,19 +19,26 @@
 			<br><br>
 
 			<h2> Name </h2>
-			<input id="name_input" type="text" onkeypress="key_press()" autofocus="true" maxlength="12" value="test"> </input>
+			<input id="name_input" type="text" onkeypress="key_press()" autofocus="true" maxlength="12"> </input>
 
 			<br><br>
 			<br><br>
 
 			<h2> Game ID </h2>
-			<input id="id_input" type="text" onkeypress="key_press()" autocomplete="false" maxlength="4" value="test"> </input>
+			<input id="id_input" type="text" onkeypress="key_press()" autocomplete="false" maxlength="4"> </input>
 
 			<br><br>
 
 			<button id="menu_button" class="menu" onclick="" style="display: none;"> </button>
 
 			<br><br>
+
+			<div id="packages">
+				<h3> Custom Words </h3>
+				<textarea id="custom_words">
+					Enter words here, and seperate words with a comma (,).
+				</textarea>
+			</div>
 
 			<error id="error" style="display: none;"> </error>
 		</div>
@@ -128,7 +135,7 @@
 					
 					<br>
 
-					<input id="message" style="width: 75%;">
+					<input id="message" style="width: 75%;" maxlength="45">
 					<button id="send" style="font-size: 175%;"> > </button>
 				</div>
 			</div>

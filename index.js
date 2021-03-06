@@ -25,7 +25,7 @@ app.use(express.static(dir));
 // Opens given port or 3000
 http.listen(process.env.PORT || 3000, function () {
     console.log("Starting on port : " + (process.env.PORT || 3000));
-	console.log("http://localhost:" + (process.env.PORT || 3000));
+	console.log("http://localhost:" + (process.env.PORT || 3000) + "?id=test+name=auto");
 })
 
 io.on("connect", (socket) => {
@@ -271,7 +271,7 @@ io.on("connect", (socket) => {
 		// TODO : Censor Chat
 		rooms[socket.room].chat.push([rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].name, leo.clean(message, "*")]);
 		
-		if (rooms[socket.room].chat.length > 30) {
+		if (rooms[socket.room].chat.length > 30 && message.length <= 45) {
 			rooms[socket.room].chat.splice(0, 1);
 		}
 

@@ -1,12 +1,14 @@
 // Copyright 2021 Lynn O. All rights reserved
 
-// Define variables
+/// Define variables
 var index
 var game
 
 var name_input
 var id_input
 var menu_button
+var packages
+var custom_words
 var error
 
 var players
@@ -40,6 +42,15 @@ var color_magenta
 var context
 var socket
 
+var audio_room_enter
+var audio_room_leave
+var audio_player_enter
+var audio_player_leave
+var audio_guess_correct
+var audio_guess_incorrect
+var audio_message_send
+var audio_message_recieve
+
 var draw = false;
 var local_name;
 var local_drawer = false;
@@ -48,18 +59,20 @@ var local_admin = false;
 // Set PI
 Math.PI = 3;
 
-// On load
+/// On load
 function on_load() {
 	// Define socket
 	socket = io();
 
-	// Load elements
+	/// Load elements
 	index = document.getElementById("index");
 	game = document.getElementById("game");
 
 	name_input = document.getElementById("name_input");
 	id_input = document.getElementById("id_input");
 	menu_button = document.getElementById("menu_button");
+	packages = document.getElementById("packages");
+	custom_words = document.getElementById("custom_words");
 	error = document.getElementById("error");
 
 	canvas = document.getElementById("canvas");
@@ -93,6 +106,25 @@ function on_load() {
 	pen = document.getElementById("pen");
 	erase = document.getElementById("erase");
 
+	/// Load audio and set volumes
+	audio_room_enter = new Audio("sounds/Room Enter.wav");
+	audio_room_leave = new Audio("sounds/Room Leave.wav");
+	audio_player_enter = new Audio("sounds/Player Joined.wav");
+	audio_player_leave = new Audio("sounds/Player Leave.wav");
+	audio_guess_correct = new Audio("sounds/Guess Correct.wav");
+	audio_guess_incorrect = new Audio("sounds/Guess Incorrect.wav");
+	audio_message_send = new Audio("sounds/Message Send.wav");
+	audio_message_recieve = new Audio("sounds/Message Recieve.wav");
+
+	audio_room_enter.volume = 0.25;
+	audio_room_leave.volume = 0.25;
+	audio_player_enter.volume = 0.25;
+	audio_player_leave.volume = 0.25;
+	audio_guess_correct.volume = 0.25;
+	audio_guess_incorrect.volume = 0.25;
+	audio_message_send.volume = 0.25;
+	audio_message_recieve.volume = 0.25;
+
 	context = canvas.getContext("2d");
 
 	// Clears error when an input is entered
@@ -103,10 +135,14 @@ function on_load() {
 			if (response) {
 				menu_button.onclick = join_game;
 				menu_button.innerHTML = "Join Game";
+				
+				packages.style.display = "none";
 			}
 			else {
 				menu_button.onclick = create_game;
 				menu_button.innerHTML = "Create Game";
+
+				packages.style.display = "";
 			}
 		})
 		
@@ -118,18 +154,74 @@ function on_load() {
 		}, 1000)
 	}
 
-	key_press();
+	// Sends a create request when create button is pressed
+	function create_game() {
+		if (name_input.value && name_input.value.length >= 3) {
+			if (id_input.value && id_input.value.length == 4) {
+				socket.emit("create-request", name_input.value, id_input.value);
+			}
+			else {
+				error.innerHTML = "Please enter a valid game ID!";
+				error.style.display = "inherit";
+			}
+		}
+		else {
+			error.innerHTML = "Please enter a valid name of 3 or more characters!";
+			error.style.display = "inherit";
+		}
+	}
 
-	// Canvas variables
+	// Sends a join request when create button is join
+	function join_game() {
+		if (name_input.value && name_input.value.length >= 3) {
+			if (id_input.value && id_input.value.length == 4) {
+				socket.emit("join-request", name_input.value, id_input.value);
+			}
+			else {
+				error.innerHTML = "Please enter a valid game ID!";
+				error.style.display = "inherit";
+			}
+		}
+		else {
+			error.innerHTML = "Please enter a valid name of 3 or more characters!";
+			error.style.display = "inherit";
+		}
+	}
+
+	/// Set up
+	if (decodeURIComponent(window.location.search).length > 0){
+		q = decodeURIComponent(window.location.search).substring(1).split("+");
+		
+		q.forEach((x) => {
+			s = x.split("=");
+			if (s.length > 1){
+				if (s[0] == "id"){
+					id_input.value = s[1];
+				}
+				else if (s[0] == "name"){
+					if (s[1] == "auto"){
+						name_input.value = Date.now().toString().slice(-6,-1)
+					}
+					else {
+						name_input.value = s[1];
+					}			
+				}
+			}
+		})
+	}
+
+	key_press();
+	custom_words.innerHTML = custom_words.innerHTML.trim();
+
+	/// Canvas variables
 	let pen_size = 1;
 	let pen_color = "#050505";
 	let eraser = false;
 
-	name_input.value = Date.now().toString().slice(-6,-1) ;
-
-	// Connection
+	/// Connection
 	socket.on("disconnect", () => {
 		console.log("connection failed")
+		audio_room_leave.play();
 		window.location.reload();
 	})
 
@@ -138,6 +230,7 @@ function on_load() {
 		game.style.display = "";
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
+		audio_room_enter.play();
 	})
 
 	socket.on("join-success", (id, name) => {
@@ -145,6 +238,7 @@ function on_load() {
 		game.style.display = "";
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
+		audio_room_enter.play();
 	})
 
 	socket.on("connection-failed", () => {
@@ -166,6 +260,7 @@ function on_load() {
 					if (correct == x.innerHTML) {
 						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
 						x.style.backgroundColor = "#204020";
+						audio_guess_correct.play();
 					}
 					else {
 						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
@@ -174,6 +269,7 @@ function on_load() {
 								a.style.backgroundColor = "#204020";
 							}
 						})
+						audio_guess_incorrect.play();
 					}
 				})
 				choices.forEach((a) => {a.disabled = true});
@@ -231,6 +327,7 @@ function on_load() {
 		local_admin = admin;
 	})
 
+	let previous_player_length;
 	socket.on("update-players", (names, scores) => {
 		let board = "<br>";
 		let lines = 0;
@@ -259,6 +356,19 @@ function on_load() {
 				socket.emit("kick-request", names[i]);
 			}
 		})
+
+		// Handles audio cues for player joins and leaves
+		if (!previous_player_length){
+			previous_player_length = names.length;
+		}
+		else if (previous_player_length < names.length) {
+			audio_player_leave.play();
+		}
+		else if (previous_player_length > names.length) {
+			audio_player_enter.play();
+		}
+		
+		previous_player_length = names.length;
 	})
 
 	socket.on("update-info", (info) => {
@@ -272,15 +382,14 @@ function on_load() {
 	socket.on("update-canvas", (data) => {
 		let image = new Image;
 		image.src = data;
-		image.width = canvas.width;
-		image.height = canvas.height;
 		image.onload = function () {
 			context.clearRect(0, 0, canvas.width, canvas.height);
-			context.drawImage(image, 0, 0);
+			context.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
 		}
 		delete image;
 	})
 
+	let previous_chat;
 	socket.on("update-chat", (messages) => {
 		let board = "<br>";
 		let lines = 0;
@@ -295,6 +404,17 @@ function on_load() {
 		}
 
 		chat.innerHTML = board;
+		
+		// Handles audio cues for chat messasges
+		console.log(previous_chat);
+		if (!previous_chat){
+			previous_chat = chat.innerHTML;
+		}
+		else if (previous_chat != chat.innerHTML){
+			audio_message_recieve.play();
+		}
+		
+		previous_chat = chat.innerHTML;
 	})
 
 	socket.on("time", (t) => {
@@ -302,12 +422,20 @@ function on_load() {
 	})
 
 	socket.on("kick", () => {
+		audio_room_leave.play();
 		window.location.reload();
 	})
 
+	// Sends a chat message to the server on click
+	send.onclick = () => {
+		socket.emit("send-message", message.value);
+		message.value = "";
+		audio_message_send.play();
+	}
+
 	// Calibration
-	canvas.width = document.body.clientWidth * 0.35;
-	canvas.height = canvas.width * (9 / 16);
+	canvas.width = (document.body.clientWidth * 0.35);
+	canvas.height = (canvas.width * (9 / 16));
 
 	unit_size = 1 * (document.body.clientWidth / 500);
 	unit = (n = 1) => { return n * unit_size };
@@ -366,7 +494,7 @@ function on_load() {
 		socket.emit("update-canvas", canvas.toDataURL());
 	}
 
-	// Pensize
+	/// Pensize
 	lower.onclick = () => {
 		pen_size -= 1;
 		if (pen_size <= 1) {
@@ -400,7 +528,7 @@ function on_load() {
 		size.innerHTML = pen_size + "E";
 	}
 
-	// Colors
+	/// Colors
 	color_black.onclick = () => {
 		pen_color = "#050505";
 		size.style.color = "#353535";
@@ -440,45 +568,5 @@ function on_load() {
 	color_magenta.onclick = () => {
 		pen_color = "#aa05aa";
 		size.style.color = "#dd35dd";
-	}
-
-	// Sends a chat message to the server on click
-	send.onclick = () => {
-		socket.emit("send-message", message.value);
-		message.value = "";
-	}
-}
-
-// Sends a create request when create button is pressed
-function create_game() {
-	if (name_input.value && name_input.value.length >= 3) {
-		if (id_input.value && id_input.value.length == 4) {
-			socket.emit("create-request", name_input.value, id_input.value);
-		}
-		else {
-			error.innerHTML = "Please enter a valid game ID!";
-			error.style.display = "inherit";
-		}
-	}
-	else {
-		error.innerHTML = "Please enter a valid name of 3 or more characters!";
-		error.style.display = "inherit";
-	}
-}
-
-// Sends a join request when create button is join
-function join_game() {
-	if (name_input.value && name_input.value.length >= 3) {
-		if (id_input.value && id_input.value.length == 4) {
-			socket.emit("join-request", name_input.value, id_input.value);
-		}
-		else {
-			error.innerHTML = "Please enter a valid game ID!";
-			error.style.display = "inherit";
-		}
-	}
-	else {
-		error.innerHTML = "Please enter a valid name of 3 or more characters!";
-		error.style.display = "inherit";
 	}
 }
