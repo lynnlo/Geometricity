@@ -1,5 +1,6 @@
 body {
 	background-color: #151515;
+	background: radial-gradient(circle, #151515 0%, #1a1a1a 100%);
 	color: #d0d0d0;
 	text-align: center;
 	user-select: none;
@@ -14,11 +15,15 @@ img {
 
 canvas {
 	background-color: #353535;
+
+	border-radius: 5%;
 }
 
 p {
 	font-size: 100%;
 	display: inline-block;
+
+	font-family: inherit;
 }
 
 input {
@@ -29,6 +34,7 @@ input {
 	border-radius: 5%;
 
 	background-color: #202020;
+	background: radial-gradient(circle, #252525 0%, #202020 100%);
 	color: #909090;
 
 	border-bottom-color: #151515;
@@ -37,26 +43,36 @@ input {
 	font-family: inherit;
 }
 
+input[type="checkbox"] {
+	filter: brightness(15%) grayscale(100%);
+	transform: scale(2);
+	outline: none;
+}
+
 textarea {
-	font-size: 175%;
+	font-size: 125%;
 
 	text-align: center;
 	width: 35%;
 
 	background-color: #202020;
+	background: radial-gradient(circle, #252525 0%, #202020 100%);
 	color: #909090;
 	
 	border-color: #151515;
+
+	font-family: inherit;
 }
 
 button {
 	font-size: 125%;
 	background-color: #202020;
+	background: radial-gradient(circle, #222222 0%, #202020 100%);
 	color: #909090;
 
 	outline: none;
 
-	border-radius: 1%;
+	border-radius: 5%;
 	border-top: none;
 	border-left: none;
 	border-bottom: 1%;
@@ -69,16 +85,19 @@ button {
 
 button:hover {
 	background-color: #252525;
+	background: radial-gradient(circle, #272727 0%, #252525 100%);
 	color: #959595;
 }
 
 button:active {
 	background-color: #303030;
+	background: radial-gradient(circle, #323232 0%, #303030 100%);
 	color: #a0a0a0;
 }
 
-button:disabled {
+button:disabled, button:disabled:hover {
 	background-color: #151515;
+	background: radial-gradient(circle, #171717 0%, #151515 100%);
 	color: #909090 ;
 }
 
@@ -117,9 +136,13 @@ w::after {
 }
 
 #players, #chat {
-	padding: 1%;
 	background-color: #202020;
+	background: radial-gradient(circle, #252525 0%, #202020 100%);
+
 	text-align: left;
+
+	border-radius: 5%;
+	padding: 3%;
 }
 
 #interface { 

@@ -9,6 +9,7 @@ var id_input
 var menu_button
 var packages
 var custom_words
+var custom_use
 var error
 
 var players
@@ -73,6 +74,7 @@ function on_load() {
 	menu_button = document.getElementById("menu_button");
 	packages = document.getElementById("packages");
 	custom_words = document.getElementById("custom_words");
+	custom_use = document.getElementById("custom_use");
 	error = document.getElementById("error");
 
 	canvas = document.getElementById("canvas");
@@ -150,6 +152,8 @@ function on_load() {
 			if (menu_button.style.display == "none") {
 				error.innerHTML = "No compatible server was found, please try again later."
 				error.style.display = "";
+
+				packages.style.display = "none";
 			}
 		}, 1000)
 	}
@@ -158,7 +162,7 @@ function on_load() {
 	function create_game() {
 		if (name_input.value && name_input.value.length >= 3) {
 			if (id_input.value && id_input.value.length == 4) {
-				socket.emit("create-request", name_input.value, id_input.value);
+				socket.emit("create-request", name_input.value, id_input.value, custom_words.value, custom_use.value);
 			}
 			else {
 				error.innerHTML = "Please enter a valid game ID!";
@@ -212,6 +216,7 @@ function on_load() {
 
 	key_press();
 	custom_words.innerHTML = custom_words.innerHTML.trim();
+	packages.style.display = "none";
 
 	/// Canvas variables
 	let pen_size = 1;
@@ -220,7 +225,6 @@ function on_load() {
 
 	/// Connection
 	socket.on("disconnect", () => {
-		console.log("connection failed")
 		audio_room_leave.play();
 		window.location.reload();
 	})
@@ -244,7 +248,7 @@ function on_load() {
 	socket.on("connection-failed", () => {
 		error.innerHTML = "Game ID or name invalid or taken.";
 		error.style.display = "";
-		setTimeout(() => {key_press()}, 1500);
+		setTimeout(() => {key_press()}, 1000);
 	})
 
 	socket.on("start-game", (name, list) => {
@@ -258,15 +262,15 @@ function on_load() {
 			x.onclick = () => {
 				socket.emit("guess", x.innerHTML, (correct) => {
 					if (correct == x.innerHTML) {
-						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
-						x.style.backgroundColor = "#204020";
+						choices.forEach((a) => {a.style.background = "radial-gradient(circle, #422222 0%, #402020 100%)"});
+						x.style.background = "radial-gradient(circle, #224222 0%, #204020 100%)";
 						audio_guess_correct.play();
 					}
 					else {
-						choices.forEach((a) => {a.style.backgroundColor = "#402020"});
+						choices.forEach((a) => {a.style.background = "radial-gradient(circle, #422222 0%, #402020 100%)"});
 						choices.forEach((a) => {
 							if (a.innerHTML == correct){
-								a.style.backgroundColor = "#204020";
+								a.style.background = "radial-gradient(circle, #224222 0%, #204020 100%)";
 							}
 						})
 						audio_guess_incorrect.play();
@@ -318,7 +322,7 @@ function on_load() {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
 		choices.forEach((x) => {
-			x.style.backgroundColor = "";
+			x.style.background = "";
 			x.disabled = true;
 		})
 	})
@@ -345,9 +349,6 @@ function on_load() {
 			board += "<br>";
 		}
 
-		console.log(names);
-		console.log(board);
-
 		players.innerHTML = board;
 		
 		// Sends the kick request to the server if their kick button is clicked
@@ -372,6 +373,7 @@ function on_load() {
 	})
 
 	socket.on("update-info", (info) => {
+		console.log(info);
 		information.innerHTML = info;
 	})
 
@@ -406,7 +408,6 @@ function on_load() {
 		chat.innerHTML = board;
 		
 		// Handles audio cues for chat messasges
-		console.log(previous_chat);
 		if (!previous_chat){
 			previous_chat = chat.innerHTML;
 		}
@@ -425,13 +426,6 @@ function on_load() {
 		audio_room_leave.play();
 		window.location.reload();
 	})
-
-	// Sends a chat message to the server on click
-	send.onclick = () => {
-		socket.emit("send-message", message.value);
-		message.value = "";
-		audio_message_send.play();
-	}
 
 	// Calibration
 	canvas.width = (document.body.clientWidth * 0.35);
@@ -557,7 +551,6 @@ function on_load() {
 	color_yellow.onclick = () => {
 		pen_color = "#aaaa05";
 		size.style.color = "#dddd35";
-		console.log("yellow")
 	}
 
 	color_teal.onclick = () => {
@@ -569,4 +562,19 @@ function on_load() {
 		pen_color = "#aa05aa";
 		size.style.color = "#dd35dd";
 	}
+	
+	// Sends a chat message to the server on click
+	send.onclick = () => {
+		socket.emit("send-message", message.value);
+		message.value = "";
+		audio_message_send.play();
+	}
+
+	message.addEventListener("keypress", (k) => {
+		if (k.key == "Enter"){
+			socket.emit("send-message", message.value);
+			message.value = "";
+			audio_message_send.play();
+		}
+	})
 }
