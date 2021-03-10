@@ -42,13 +42,15 @@ io.on("connect", (socket) => {
 		if (rooms[id]){
 			let players = [];
 			let points = [];
+			let states = [];
 
 			for (i=0; i<rooms[id].sockets.length; i++){
 				players.push(rooms[id].sockets[i].name);
 				points.push(rooms[id].sockets[i].points);
+				states.push(rooms[id].sockets[i].state);
 				rooms[id].sockets[i].socket.emit("update-score", rooms[id].sockets[i].points);
 			}
-			io.to(id).emit("update-players", players, points);
+			io.to(id).emit("update-players", players, points, states);
 			io.to(id).emit("update-chat", rooms[id].chat);
 		}
 	}
@@ -65,6 +67,12 @@ io.on("connect", (socket) => {
 			rooms[id].drawer = {};
 			clearInterval(rooms[id].interval);
 			clearTimeout(rooms[id].timeout);
+
+			rooms[id].sockets.forEach((x) => {
+				x.state = "";
+			})
+
+			update_players(socket.room);
 		}
 	}
 
@@ -77,6 +85,7 @@ io.on("connect", (socket) => {
 			setTimeout(() => {
 				drawer = rooms[id].sockets[random.int(0, rooms[id].sockets.length - 1)];
 				rooms[id].drawer = drawer;
+				rooms[id].sockets.find((x) => {return x == drawer}).state = "drawer"
 				
 				let list = [];
 				for (i=0; i<4; i++){
@@ -119,6 +128,7 @@ io.on("connect", (socket) => {
 		else if (Object.keys(rooms[id].drawer).length > 0){
 			socket.emit("start-game", rooms[id].drawer.name, rooms[id].list);
 			socket.emit("update-info", rooms[id].info);
+			rooms[id].drawer.socket.emit("update-info", "Your word is : " + rooms[id].word + ".");
 		}
 		else {
 			rooms[id].info = "Waiting for more players...";
@@ -130,8 +140,13 @@ io.on("connect", (socket) => {
 	socket.on("disconnect", () => {
 		if (socket.room){
 			rooms[socket.room].sockets.splice(rooms[socket.room].sockets.findIndex((x) => {return x.id == socket.id}), 1);
+			
+			if (rooms[socket.room].sockets.length == 1) {
+				// Wait for more players if there isn't enough players
+				reset_game(socket.room);
+			}
 
-			if (rooms[socket.room].sockets.length > 1){
+			if (rooms[socket.room].sockets.length >= 1){
 				// Reset the round if the current drawer left
 				if (rooms[socket.room].drawer.id == socket.id){
 					reset_game(socket.room);
@@ -148,10 +163,6 @@ io.on("connect", (socket) => {
 
 				rooms[socket.room].admin.socket.emit("update-admin", true);
 				update_players(socket.room);
-			}
-			else if (rooms[socket.room].sockets.length == 1) {
-				// Wait for more players if there isn't enough players
-				reset_game(socket.room);
 			}
 			else {
 				// Delete the room when there are no players
@@ -185,6 +196,7 @@ io.on("connect", (socket) => {
 					name: name,
 					socket: socket,
 					points: 0,
+					state: "",
 				}
 			],
 			admin: {
@@ -202,7 +214,6 @@ io.on("connect", (socket) => {
 			number_guessed: 0,
 		}
 
-		console.log(rooms[id].package);
 		socket.room = id;
 		socket.name = name;
 
@@ -254,11 +265,16 @@ io.on("connect", (socket) => {
 		if (rooms[socket.room] && rooms[socket.room].drawer.id != socket.id){
 			if (rooms[socket.room].word == guess){
 				rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].points += 5;
+				rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].state = "correct";
 
 				rooms[socket.room].sockets[find_socket_index(socket.room, rooms[socket.room].drawer.id)].points += 2;
 
 				update_players(socket.room);
 			}
+			else {
+				rooms[socket.room].sockets[find_socket_index(socket.room, socket.id)].state = "incorrect";
+			}
+
 			rooms[socket.room].number_guessed += 1;
 			if (rooms[socket.room].number_guessed >= rooms[socket.room].sockets.length - 1) {
 				setTimeout(() => {
@@ -267,7 +283,9 @@ io.on("connect", (socket) => {
 					start_seq(socket.room);
 				}, 2000);
 			}
+
 			callback(rooms[socket.room].word);
+			update_players(socket.room);
 		} 
 	})
 

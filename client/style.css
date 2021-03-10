@@ -152,3 +152,14 @@ w::after {
 #information, #points, #drawer, #time {
 	font-size: 80%;
 }
+
+#link {
+	font-size: 125%;
+
+	background-color: #202020;
+	background: radial-gradient(circle, #252525 0%, #202020 100%);
+	color: #4060aa;
+
+	border-radius: 5%;
+	padding: 1%;
+}

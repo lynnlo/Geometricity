@@ -30,6 +30,7 @@ var size
 var pen
 var erase
 var time
+var link
 
 var color_black
 var color_white
@@ -82,7 +83,9 @@ function on_load() {
 	information = document.getElementById("information");
 	points = document.getElementById("points");
 	drawer = document.getElementById("drawer");
+	link = document.getElementById("link");
 
+	// Concat so I dont get errors
 	choices = [...document.getElementsByClassName("choices")];
 
 	color_black = document.getElementById("color_black");
@@ -118,6 +121,7 @@ function on_load() {
 	audio_message_send = new Audio("sounds/Message Send.wav");
 	audio_message_recieve = new Audio("sounds/Message Recieve.wav");
 
+	// 100% is just too loud
 	audio_room_enter.volume = 0.25;
 	audio_room_leave.volume = 0.25;
 	audio_player_enter.volume = 0.25;
@@ -204,6 +208,7 @@ function on_load() {
 				}
 				else if (s[0] == "name"){
 					if (s[1] == "auto"){
+						// Maybe add random names that aren't numbers in the future?
 						name_input.value = Date.now().toString().slice(-6,-1)
 					}
 					else {
@@ -235,6 +240,8 @@ function on_load() {
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
 		audio_room_enter.play();
+		link.href = window.location.origin + "?id=" + id;
+		link.innerHTML = window.location.origin + "?id=" + id;
 	})
 
 	socket.on("join-success", (id, name) => {
@@ -243,6 +250,8 @@ function on_load() {
 		room.innerHTML = "Room ID : " + id;
 		local_name = name;
 		audio_room_enter.play();
+		link.href = window.location.origin + "?id=" + id;
+		link.innerHTML = window.location.origin + "?id=" + id;
 	})
 
 	socket.on("connection-failed", () => {
@@ -261,6 +270,7 @@ function on_load() {
 
 			x.onclick = () => {
 				socket.emit("guess", x.innerHTML, (correct) => {
+					// Makes button green if correct and red otherwise
 					if (correct == x.innerHTML) {
 						choices.forEach((a) => {a.style.background = "radial-gradient(circle, #422222 0%, #402020 100%)"});
 						x.style.background = "radial-gradient(circle, #224222 0%, #204020 100%)";
@@ -332,16 +342,21 @@ function on_load() {
 	})
 
 	let previous_player_length;
-	socket.on("update-players", (names, scores) => {
+	socket.on("update-players", (names, scores, states) => {
 		let board = "<br>";
 		let lines = 0;
 
+		// Why can't I use react for this??
 		for (let i=0; i<names.length; i++){
+			// Adds a color to indicate player state
+			board += "<p style='display:inline; " + (((states[i] == "correct") ? "color: #156515" : (states[i] == "incorrect" ? "color: #651515" : (states[i] == "drawer" ? "color: #156565" : "" )))) + "'>";
+
 			// Adds a kick button to all players if the player is an admin
-			board += (local_admin ? "<button class='kicks'" + (names[i] == local_name ? "disabled='true'" : "") + "> Kick </button> "  : "") 
+			board += (local_admin ? "<button class='kicks' style='font-size: 100%'" + (names[i] == local_name ? "disabled='true'" : "") + "> Kick </button> "  : "") 
 			
 			// Display all player names
-			board += (names[i] == local_name ? "<b>" + names[i] + "</b>" : names[i]) + " : " + scores[i] + "<br>";
+			board += (names[i] == local_name ? "<b>" + names[i] + "</b>" : names[i]) + " : " + scores[i] + "</p><br>";
+
 			lines += 1;
 		}
 
@@ -373,7 +388,6 @@ function on_load() {
 	})
 
 	socket.on("update-info", (info) => {
-		console.log(info);
 		information.innerHTML = info;
 	})
 
