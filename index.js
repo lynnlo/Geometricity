@@ -125,12 +125,12 @@ io.on("connect", (socket) => {
 				}, 1000)
 			}, 500)
 		}
-		else if (Object.keys(rooms[id].drawer).length > 0){
+		else if (rooms[id] && Object.keys(rooms[id].drawer).length > 0){
 			socket.emit("start-game", rooms[id].drawer.name, rooms[id].list);
 			socket.emit("update-info", rooms[id].info);
 			rooms[id].drawer.socket.emit("update-info", "Your word is : " + rooms[id].word + ".");
 		}
-		else {
+		else if (rooms[id]) {
 			rooms[id].info = "Waiting for more players...";
 			io.to(id).emit("update-info", rooms[id].info);
 		}

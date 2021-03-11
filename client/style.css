@@ -5,7 +5,9 @@ body {
 	text-align: center;
 	user-select: none;
 
-	font-family: 'Courier New', Courier, monospace
+	font-family: 'Courier New', Courier, monospace;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 img {
@@ -24,6 +26,8 @@ p {
 	display: inline-block;
 
 	font-family: inherit;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 input {
@@ -67,7 +71,6 @@ textarea {
 button {
 	font-size: 125%;
 	background-color: #202020;
-	background: radial-gradient(circle, #222222 0%, #202020 100%);
 	color: #909090;
 
 	outline: none;
@@ -81,24 +84,29 @@ button {
 	border-right-color: #151515;
 
 	font-family: inherit;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 button:hover {
 	background-color: #252525;
-	background: radial-gradient(circle, #272727 0%, #252525 100%);
 	color: #959595;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 button:active {
 	background-color: #303030;
-	background: radial-gradient(circle, #323232 0%, #303030 100%);
 	color: #a0a0a0;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 button:disabled, button:disabled:hover {
 	background-color: #151515;
-	background: radial-gradient(circle, #171717 0%, #151515 100%);
-	color: #909090 ;
+	color: #909090;
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 .menu {
@@ -143,6 +151,14 @@ w::after {
 
 	border-radius: 5%;
 	padding: 3%;
+
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
+}
+
+#players p {
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }
 
 #interface { 
@@ -157,9 +173,19 @@ w::after {
 	font-size: 125%;
 
 	background-color: #202020;
-	background: radial-gradient(circle, #252525 0%, #202020 100%);
 	color: #4060aa;
 
 	border-radius: 5%;
 	padding: 1%;
+	
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
+}
+
+#link:hover {
+	background-color: #252525;
+	color: #4565af;
+
+	transition: all 500ms ease;
+	-webkit-transition: all 500ms ease;
 }

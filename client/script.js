@@ -272,15 +272,15 @@ function on_load() {
 				socket.emit("guess", x.innerHTML, (correct) => {
 					// Makes button green if correct and red otherwise
 					if (correct == x.innerHTML) {
-						choices.forEach((a) => {a.style.background = "radial-gradient(circle, #422222 0%, #402020 100%)"});
-						x.style.background = "radial-gradient(circle, #224222 0%, #204020 100%)";
+						choices.forEach((a) => {a.style.background = "#402020"});
+						x.style.background = "#204020";
 						audio_guess_correct.play();
 					}
 					else {
-						choices.forEach((a) => {a.style.background = "radial-gradient(circle, #422222 0%, #402020 100%)"});
+						choices.forEach((a) => {a.style.background = "#402020"});
 						choices.forEach((a) => {
 							if (a.innerHTML == correct){
-								a.style.background = "radial-gradient(circle, #224222 0%, #204020 100%)";
+								a.style.background = "#204020";
 							}
 						})
 						audio_guess_incorrect.play();
@@ -348,12 +348,13 @@ function on_load() {
 
 		// Why can't I use react for this??
 		for (let i=0; i<names.length; i++){
-			// Adds a color to indicate player state
-			board += "<p style='display:inline; " + (((states[i] == "correct") ? "color: #156515" : (states[i] == "incorrect" ? "color: #651515" : (states[i] == "drawer" ? "color: #156565" : "" )))) + "'>";
-
 			// Adds a kick button to all players if the player is an admin
 			board += (local_admin ? "<button class='kicks' style='font-size: 100%'" + (names[i] == local_name ? "disabled='true'" : "") + "> Kick </button> "  : "") 
 			
+			// Adds a color to indicate player state
+			board += "<p style='display:inline; ";
+			board += (((states[i] == "correct") ? "color: #156515" : (states[i] == "incorrect" ? "color: #651515" : (states[i] == "drawer" ? "color: #156565" : "" )))) + "'>";
+
 			// Display all player names
 			board += (names[i] == local_name ? "<b>" + names[i] + "</b>" : names[i]) + " : " + scores[i] + "</p><br>";
 
